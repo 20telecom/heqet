@@ -44,7 +44,7 @@ heqet/
 ```
 
 ## Documentation
-
+- [Current Issues](CURRENT_ISSUES.md)
 - [IN1CLICK Manual](IN1CLICK_README.md)
 - [ISO Build Quick Start](iso-build/ISO_BUILD_QUICKSTART.md)
 - [ISO Build Guide](ISO_BUILD.md)
