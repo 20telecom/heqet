@@ -2,12 +2,16 @@
 # Heqet ISO
 # Debian 12 + FreePBX 17 + Asterisk 22 + MariaDB 10
 
+**Version**: 1.0.0
+**Last Updated**: 12th February 2026
+**Status**: Active Development
+
 Designed for Zero-Touch Install of FreePBX® 17 using the pre-built ISO.
 
 WARNING: The Heqet ISO is not currently suitable for use in production.
 Download a beta version at https://heqet.in1.click/beta/freepbx17.iso
 
-*** NOT CURRENTLY SUITABLE FOR USB - TESTED ON VULTR, PROXMOX, VIRTUALBOX ***
+IMPORTANT *** NOT CURRENTLY SUITABLE FOR USB - TESTED ON VULTR, PROXMOX, VIRTUALBOX ***
 
 ## Using The Pre-Built ISO
 
@@ -134,9 +138,3 @@ Contributions are welcome! Please:
 ## Disclaimer
 
 This software is provided as-is without warranty of any kind. Test thoroughly before production use. The authors accept no responsibility for any damage or issues arising from the use of this software.
-
----
-
-**Version**: 0.0.1
-**Last Updated**: 27 January 2026
-**Status**: Active Development
