@@ -7,6 +7,8 @@ Designed for Zero-Touch Install of FreePBX® 17 using the pre-built ISO.
 WARNING: The Heqet ISO is not currently suitable for use in production.
 Download a beta version at https://heqet.in1.click/beta/freepbx17.iso
 
+*** NOT CURRENTLY SUITABLE FOR USB - TESTED ON VULTR, PROXMOX, VIRTUALBOX ***
+
 ## Using The Pre-Built ISO
 
 1. Download the ISO from https://heqet.in1.click/beta/freepbx17.iso
