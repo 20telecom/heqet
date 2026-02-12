@@ -45,7 +45,7 @@ fi
 
 printf "\n"
 printf "  +---------------------------------------------------------+\n"
-printf "  |    Heqet 0.0.1  -  FreePBX 17  -  Zero-Touch Install    |\n"
+printf "  |    Heqet 1.0.1  -  FreePBX 17  -  Zero-Touch Install    |\n"
 printf "  +---------------------------------------------------------+\n"
 # Gold/Yellow color
 GOLD='\033[38;5;178m'
@@ -82,7 +82,7 @@ while [ "$i" -ge 1 ]; do
     else
         printf "\r  %2s" "$i"
     fi
-    sleep 2
+    sleep 1
     i=$((i - 1))
 done
 printf "\r    \r\n"
