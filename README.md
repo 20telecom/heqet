@@ -44,6 +44,7 @@ heqet/
 ```
 
 ## Documentation
+- [AI Disclosure](AI_DISCLOSURE.md)
 - [Current Issues](CURRENT_ISSUES.md)
 - [IN1CLICK Manual](IN1CLICK_README.md)
 - [ISO Build Quick Start](iso-build/ISO_BUILD_QUICKSTART.md)
