@@ -21,7 +21,7 @@ VERSION="1.1.0"
 # ${VERSION}
 #
 # PUBLISHED:
-# 11th January 2026 18:00 GMT
+# 2nd March 2026 20:00 GMT
 #
 # LICENSE:
 # GNU General Public License v3.0
@@ -38,12 +38,31 @@ START_TIME=$(date +%s)
 BGRN='\033[1;32m'
 BRED='\033[1;31m'
 LBLUE='\033[1;94m'
+CYAN='\033[38;5;51m'
 BYEL='\e[93m'
 WHT='\033[1;37m'
 NC='\033[0m'
 
 # Sleep Delay for user readability
 SLEEP_DELAY=0.5
+
+# Countdown timer
+countdown() {
+  local secs=$1
+  local i=$secs
+  while [ "$i" -ge 1 ]; do
+    printf "\r  ${BYEL}Retrying in %2s...${NC}" "$i"
+    sleep 1
+    i=$((i - 1))
+  done
+  printf "\r                        \r"
+}
+
+# Welcome
+echo -e "${CYAN}Hello. Thanks for trying IN1CLICK for FreePBX 17 on Debian 12 (bookworm).${NC}"
+sleep $SLEEP_DELAY
+echo
+echo -e "${BYEL}In case you need support from 20tele.com, this is IN1CLICK version 1.1.0.${NC}"
 
 # Function to print section headers
 print_step() {
@@ -75,10 +94,16 @@ handle_install_failure() {
 }
 sleep 4
 
-# Welcome
-echo
-echo -e "${LBLUE}Hello. Thanks for using IN1CLICK for FreePBX 17 on Debian 12 [$VERSION] by 20tele.com${NC}"
-sleep 4
+# Heqet ISO detection (used to skip interactive prompts during unattended install)
+IS_HEQET=false
+print_step "Checking if this is the Heqet ISO..."
+if [ -f /etc/systemd/system/in1click-firstboot.service ] || [ -f /etc/systemd/system/in1click-cleanup.service ]; then
+  IS_HEQET=true
+  echo -e "Heqet ISO detected. ${WHT}OK to proceed.${NC}"
+else
+  echo -e "Not the Heqet ISO. ${WHT}OK to proceed.${NC}"
+fi
+sleep $SLEEP_DELAY
 
 # Operating System check 1
 print_step "Checking if this is Debian 12..."
@@ -171,7 +196,7 @@ fi
 
 # /tmp mount check
 print_step "Checking /tmp permissions..."
-if mount | grep -q '/tmp' | grep -q noexec; then
+if mount | grep '/tmp' | grep -q noexec; then
   echo -e "${BRED}/tmp is mounted with noexec. This will break FreePBX install. Exiting, please remount or fix fstab.${NC}"
   exit 1
 else
@@ -182,8 +207,25 @@ fi
 # Prevent FreePBX Overwrite
 print_step "Checking for existing FreePBX installation..."
 if [[ -f /etc/freepbx.conf || -d /var/www/html/admin ]]; then
-  echo -e "${BRED}FreePBX appears to be installed already. Exiting, IN1CLICK is not appropriate for this installation.${NC}"
-  echo
+  if [ "$IS_HEQET" = true ]; then
+    echo -e "${BRED}Stopping. FreePBX is already installed.${NC}"
+    echo
+    echo -e "${WHT}A previous installation may have failed or partially completed.${NC}"
+    echo -e "${WHT}IN1CLICK cannot safely continue with an existing FreePBX installation.${NC}"
+    echo
+    echo -e "${BYEL}What to do next:${NC}"
+    echo
+    echo -e "${WHT}  1. Boot from the Heqet ISO and start a fresh installation.${NC}"
+    echo -e "${WHT}     This will wipe the disk and install from scratch.${NC}"
+    echo
+    echo -e "${WHT}  2. If the problem persists, email ${BYEL}support@20tele.com${NC}"
+    echo
+    echo -e "${LBLUE}IN1CLICK is exiting. Goodbye.${NC}"
+    echo
+  else
+    echo -e "${BRED}Stopping. FreePBX is already installed. Exiting, IN1CLICK is not appropriate for this installation.${NC}"
+    echo
+  fi
   exit 1
 else
   echo -e "No existing FreePBX found. ${WHT}OK to proceed.${NC}"
@@ -193,8 +235,18 @@ fi
 # Prevent Asterisk Overwrite
 print_step "Checking for existing Asterisk installation..."
 if command -v asterisk >/dev/null 2>&1 || systemctl list-units --type=service | grep -q 'asterisk'; then
-  echo -e "${BRED}Asterisk appears to be installed already. Exiting, IN1CLICK is not appropriate for this installation.${NC}"
-  echo
+  if [ "$IS_HEQET" = true ]; then
+    echo -e "${BRED}Stopping. Asterisk is already installed.${NC}"
+    echo
+    echo -e "${WHT}A previous installation may have failed or partially completed.${NC}"
+    echo -e "${WHT}Boot from the Heqet ISO to start a fresh installation.${NC}"
+    echo
+    echo -e "${LBLUE}IN1CLICK is exiting. Goodbye.${NC}"
+    echo
+  else
+    echo -e "${BRED}Stopping. Asterisk is already installed. Exiting, IN1CLICK is not appropriate for this installation.${NC}"
+    echo
+  fi
   exit 1
 else
   echo -e "No existing Asterisk found. ${WHT}OK to proceed.${NC}"
@@ -204,8 +256,18 @@ fi
 # Prevent MariaDB Overwrite
 print_step "Checking for existing MariaDB installation..."
 if systemctl list-units --type=service | grep -q 'mariadb' || command -v mariadbd >/dev/null 2>&1; then
-  echo -e "${BRED}MariaDB appears to be installed already. Exiting, IN1CLICK is not appropriate for this installation.${NC}"
-  echo
+  if [ "$IS_HEQET" = true ]; then
+    echo -e "${BRED}Stopping. MariaDB is already installed.${NC}"
+    echo
+    echo -e "${WHT}A previous installation may have failed or partially completed.${NC}"
+    echo -e "${WHT}Boot from the Heqet ISO to start a fresh installation.${NC}"
+    echo
+    echo -e "${LBLUE}IN1CLICK is exiting. Goodbye.${NC}"
+    echo
+  else
+    echo -e "${BRED}Stopping. MariaDB is already installed. Exiting, IN1CLICK is not appropriate for this installation.${NC}"
+    echo
+  fi
   exit 1
 else
   echo -e "No existing MariaDB found. ${WHT}OK to proceed.${NC}"
@@ -225,7 +287,14 @@ sleep $SLEEP_DELAY
 
 # APT source check
 print_step "Checking APT sources and update availability..."
-if ! grep -qE 'deb(\.|-security\.)debian\.org' /etc/apt/sources.list && ! grep -qrE 'debian\.org' /etc/apt/sources.list.d; then
+APT_SOURCES_OK=false
+if [ -f /etc/apt/sources.list ] && grep -qE 'deb(\.|-security\.)debian\.org' /etc/apt/sources.list; then
+  APT_SOURCES_OK=true
+fi
+if grep -qrE 'debian\.org' /etc/apt/sources.list.d/ 2>/dev/null; then
+  APT_SOURCES_OK=true
+fi
+if [ "$APT_SOURCES_OK" = false ]; then
   echo -e "${BRED}Warning:${NC} APT sources do not appear to point to official Debian mirrors (e.g. deb.debian.org). Errors could occur due to outdated or unsupported packages. ${BYEL}Continuing anyway...${NC}"
 else
   echo -e "APT sources appear to be valid. ${WHT}OK to proceed.${NC}"
@@ -252,6 +321,27 @@ if [ $FIXED -eq 1 ]; then
   echo -e "${BRED}APT sources were automatically fixed. Please review your sources if you encounter issues.${NC}"
 else
   echo -e "APT sources do not contain forbidden entries. ${WHT}OK to proceed.${NC}"
+fi
+sleep $SLEEP_DELAY
+
+# Wait for any existing apt/dpkg locks to clear, 1 of 2.
+print_step "Checking for APT locks before updating packages..."
+LOCK_WAIT=0
+while fuser /var/lib/dpkg/lock-frontend /var/lib/apt/lists/lock /var/cache/apt/archives/lock >/dev/null 2>&1; do
+  if [ "$LOCK_WAIT" -eq 0 ]; then
+    echo -e "${BYEL}Another package manager is running. Waiting for it to finish...${NC}"
+  fi
+  LOCK_WAIT=$((LOCK_WAIT + 1))
+  if [ "$LOCK_WAIT" -ge 300 ]; then
+    echo -e "${BRED}APT lock still held after 2 minutes. Exiting.${NC}"
+    exit 1
+  fi
+  sleep 1
+done
+if [ "$LOCK_WAIT" -gt 0 ]; then
+  echo -e "Lock released after ${LOCK_WAIT} seconds. ${WHT}OK to proceed.${NC}"
+else
+  echo -e "No APT locks detected. ${WHT}OK to proceed.${NC}"
 fi
 sleep $SLEEP_DELAY
 
@@ -385,13 +475,15 @@ mirror_status=""
 mirror_check_once() {
   local output_file
   output_file="$(mktemp)"
-  if ! curl -fsS "https://in1.click/mirrors/cli.sh" \
+  if ! curl -fsS "https://in1.click/mirrors/cli.sh" 2>/dev/null \
     | sed '/^read -r -p/,$d' \
     | bash 2>&1 | tee "$output_file"; then
-    echo -e "${BRED}Mirror check failed to run. ${NC}"
+    mirror_status="unreachable"
+    rm -f "$output_file"
+    return
   fi
 
-  if grep -Fq "Mirrors stable. It should be safe to proceed with module updates." "$output_file"; then
+  if grep -Fq "It should be safe to proceed with module updates." "$output_file"; then
     mirror_status="good"
   elif grep -Fq "Degraded performance. Mirrors responding but not fully healthy — proceed with caution." "$output_file"; then
     mirror_status="warn"
@@ -406,52 +498,131 @@ mirror_check_once() {
   rm -f "$output_file"
 }
 
-while true; do
-  print_step "Checking FreePBX mirrors (mirrors.in1.click)..."
+MIRROR_ATTEMPTS=0
+MIRROR_MAX=3
+MIRROR_OK=false
+MIRROR_GOOD_COUNT=0
+
+while [ "$MIRROR_ATTEMPTS" -lt "$MIRROR_MAX" ]; do
+  MIRROR_ATTEMPTS=$((MIRROR_ATTEMPTS + 1))
+  echo -e "\n${BGRN}Using mirrors.in1.click to check the official FreePBX mirrors... [attempt $MIRROR_ATTEMPTS]${NC}\n"
   mirror_check_once
 
   if [ "$mirror_status" = "good" ]; then
-    echo -e "Mirrors are stable. ${WHT}OK to proceed.${NC}"
-    break
+    MIRROR_GOOD_COUNT=$((MIRROR_GOOD_COUNT + 1))
+    echo -e "Check out https://in1.click/mirrors in a web browser. ${WHT}($MIRROR_GOOD_COUNT/$MIRROR_MAX passed)${NC}"
+  elif [ "$mirror_status" = "unreachable" ]; then
+    echo -e "${BRED}Could not reach the mirror checker at in1.click.${NC}"
+  elif [ "$mirror_status" = "bad" ]; then
+    echo -e "${BRED}Mirrors are down or severely degraded.${NC}"
+  elif [ "$mirror_status" = "warn" ]; then
+    echo -e "${BYEL}Mirrors are responding but not fully healthy.${NC}"
+  elif [ "$mirror_status" = "server" ]; then
+    echo -e "${BYEL}The monitoring server itself is struggling.${NC}"
+  else
+    echo -e "${BRED}Mirror status could not be determined.${NC}"
   fi
 
-
-  echo
-  echo "IN1CLICK has been paused."
-  echo
-  echo -e "${BYEL}The mirrors are unstable!${NC}"
-  echo -e "${BYEL} 1) Check mirrors again${NC}"
-  echo -e "${BYEL} 2) Abort installation${NC}"
-  echo -e "${BYEL} 3) Carry on anyway${NC}"
-  printf "${BYEL}Caution. Try again? [1]: ${NC}"
-  echo
-  read -r mirror_choice
-
-  case "$mirror_choice" in
-    ""|1)
-      continue
-      ;;
-    3)
-      echo -e "${BYEL}Continuing despite mirror warnings.${NC}"
-      break
-      ;;
-    2)
-      echo -e "${BRED}Aborting installation due to mirror status.${NC}"
-      echo
-      echo "You can resrtart IN1CLICK with the following command:"
-      echo
-      echo "curl freepbx.in1click | sh"
-      echo
-      echo "Email support@20tele.com for help with the Heqet ISO."
-      echo
-      echo "Goodbye."
-      exit 1
-      ;;
-    *)
-      echo -e "${BRED}Invalid choice. Please try again.${NC}"
-      ;;
-  esac
+  if [ "$MIRROR_ATTEMPTS" -lt "$MIRROR_MAX" ]; then
+    countdown 30
+  fi
 done
+
+if [ "$MIRROR_GOOD_COUNT" -eq "$MIRROR_MAX" ]; then
+echo
+  echo -e "${BGRN}All $MIRROR_MAX checks passed. Great job, Sangoma! ${WHT}OK to proceed.${NC}"
+  MIRROR_OK=true
+else
+  MIRROR_OK=false
+fi
+
+if [ "$MIRROR_OK" = false ]; then
+  while [ "$MIRROR_OK" = false ]; do
+    if [ "$IS_HEQET" = true ]; then
+      echo
+      echo -e "${BRED}FreePBX mirrors are not available after $MIRROR_MAX attempts.${NC}"
+      echo
+      echo -e "${WHT}IN1CLICK cannot install FreePBX without working mirrors.${NC}"
+      echo -e "${WHT}This is not a problem with your system. The upstream mirrors${NC}"
+      echo -e "${WHT}are not responding correctly.${NC}"
+      echo
+      if [ "$(date +%u)" -eq 6 ]; then
+        echo -e "${BYEL}Is it Saturday? The official FreePBX mirrors might be too busy${NC}"
+        echo -e "${BYEL}for this installation. Please try again tomorrow.${NC}"
+        echo
+      fi
+      echo -e "${BYEL}What to do next:${NC}"
+      echo
+      echo -e "${WHT}  1. Monitor the mirrors for up to 15 minutes before trying again.${NC}"
+      echo
+      echo -e "${WHT}     In a web browser:${NC}"
+      echo -e "${BGRN}       https://in1.click/mirrors${NC}"
+      echo
+      echo -e "${WHT}     Or from a terminal:${NC}"
+      echo -e "${BGRN}       curl mirrors.in1.click | sh${NC}"
+      echo
+      echo -e "${WHT}  2. Once the mirrors are stable, boot from the ISO and start again.${NC}"
+      echo
+      echo -e "${WHT}  3. If the problem persists, email ${BYEL}support@20tele.com${NC}"
+      echo
+      echo -e "${LBLUE}IN1CLICK is abandoning the installation. Goodbye.${NC}"
+      echo
+      exit 1
+    fi
+
+    echo
+    echo "IN1CLICK has been paused."
+    echo
+    echo -e "${BYEL}The mirrors are unstable!${NC}"
+    echo -e "${BYEL} 1) Check mirrors again${NC}"
+    echo -e "${BYEL} 2) Abort installation${NC}"
+    echo -e "${BYEL} 3) Carry on anyway${NC}"
+    printf "${BYEL}Caution. Try again? [1]: ${NC}"
+    echo
+    read -r mirror_choice
+
+    case "$mirror_choice" in
+      ""|1)
+        MIRROR_ATTEMPTS=0
+        MIRROR_GOOD_COUNT=0
+        while [ "$MIRROR_ATTEMPTS" -lt "$MIRROR_MAX" ]; do
+          MIRROR_ATTEMPTS=$((MIRROR_ATTEMPTS + 1))
+          echo -e "\n${BGRN}Using mirrors.in1.click to check the official FreePBX mirrors... [attempt $MIRROR_ATTEMPTS]${NC}\n"
+          mirror_check_once
+          if [ "$mirror_status" = "good" ]; then
+            MIRROR_GOOD_COUNT=$((MIRROR_GOOD_COUNT + 1))
+            echo -e "Check out https://in1.click/mirrors in a web browser. ${WHT}($MIRROR_GOOD_COUNT/$MIRROR_MAX passed)${NC}"
+          fi
+          if [ "$MIRROR_ATTEMPTS" -lt "$MIRROR_MAX" ]; then
+            countdown 30
+          fi
+        done
+        if [ "$MIRROR_GOOD_COUNT" -gt 0 ]; then
+          MIRROR_OK=true
+        fi
+        ;;
+      3)
+        echo -e "${BYEL}Continuing despite mirror warnings.${NC}"
+        MIRROR_OK=true
+        ;;
+      2)
+        echo -e "${BRED}Aborting installation due to mirror status.${NC}"
+        echo
+        echo "You can restart IN1CLICK with the following command:"
+        echo
+        echo "curl freepbx.in1click | sh"
+        echo
+        echo "Email support@20tele.com for help."
+        echo
+        echo "Goodbye."
+        exit 1
+        ;;
+      *)
+        echo -e "${BRED}Invalid choice. Please try again.${NC}"
+        ;;
+    esac
+  done
+fi
 
 # GitHub installer
 print_step "Checking for FreePBX GitHub installer at raw.githubusercontent.com..."
@@ -493,15 +664,26 @@ else
 fi
 sleep 4
 
-# Simulated FreePBX install failure (LEAVE EVERYTHING COMMENTED OUT)
-#print_step "Installing FreePBX 17..."
-#sleep $SLEEP_DELAY
-#cd /usr/src
-#wget -q https://raw.githubusercontent.com/FreePBX/sng_freepbx_debian_install/master/sng_freepbx_debian_install.sh -O freepbx17-install.sh
-#chmod +x freepbx17-install.sh
-#sed -i '1i exit 1' freepbx17-install.sh
-#./freepbx17-install.sh || handle_install_failure
-#sleep $SLEEP_DELAY
+# Wait for any existing apt/dpkg locks to clear, 2 of 2.
+print_step "Checking for APT locks before installing FreePBX 17..."
+LOCK_WAIT=0
+while fuser /var/lib/dpkg/lock-frontend /var/lib/apt/lists/lock /var/cache/apt/archives/lock >/dev/null 2>&1; do
+  if [ "$LOCK_WAIT" -eq 0 ]; then
+    echo -e "${BYEL}Another package manager is running. Waiting for it to finish...${NC}"
+  fi
+  LOCK_WAIT=$((LOCK_WAIT + 1))
+  if [ "$LOCK_WAIT" -ge 120 ]; then
+    echo -e "${BRED}APT lock still held after 2 minutes. Exiting.${NC}"
+    exit 1
+  fi
+  sleep 1
+done
+if [ "$LOCK_WAIT" -gt 0 ]; then
+  echo -e "Lock released after ${LOCK_WAIT} seconds. ${WHT}OK to proceed.${NC}"
+else
+  echo -e "No APT locks detected. ${WHT}OK to proceed.${NC}"
+fi
+sleep $SLEEP_DELAY
 
 # Sangoma Official FreePBX Installation
 print_step "Installing FreePBX 17..."
@@ -512,9 +694,36 @@ chmod +x freepbx17-install.sh
 ./freepbx17-install.sh || handle_install_failure
 sleep $SLEEP_DELAY
 
-# Modules upgrade
-print_step "Upgrading FreePBX modules..."
-fwconsole ma upgradeall || echo -e "${BRED}Module upgrade step completed with some warnings. ${BYEL}Continuing anyway...${NC}"
+# Modules upgrade (re-check mirrors first - they may have degraded during install)
+UPGRADE_MIRROR_OK=false
+for UPGRADE_ATTEMPT in 1 2 3; do
+  echo -e "\n${BGRN}Using mirrors.in1.click to check the official FreePBX mirrors... [attempt $UPGRADE_ATTEMPT/3]${NC}\n"
+  mirror_check_once
+  if [ "$mirror_status" = "good" ]; then
+    UPGRADE_MIRROR_OK=true
+    break
+  fi
+  if [ "$mirror_status" = "unreachable" ]; then
+    echo -e "${BYEL}Could not reach the mirror checker.${NC}"
+  elif [ "$mirror_status" = "bad" ]; then
+    echo -e "${BYEL}Mirrors are down or severely degraded.${NC}"
+  else
+    echo -e "${BYEL}Mirrors are not fully stable.${NC}"
+  fi
+  if [ "$UPGRADE_ATTEMPT" -lt 3 ]; then
+    countdown 30
+  fi
+done
+
+if [ "$UPGRADE_MIRROR_OK" = true ]; then
+  echo -e "Check out https://in1.click/mirrors in a web browser. ${WHT}Upgrading modules...${NC}"
+  echo
+  fwconsole ma upgradeall || echo -e "${BYEL}Module upgrade completed with some warnings. Continuing anyway...${NC}"
+else
+  echo -e "${BYEL}Mirrors are not stable. Skipping module upgrade to avoid partial updates.${NC}"
+  echo -e "${WHT}FreePBX is installed and working. You can upgrade modules later with:${NC}"
+  echo -e "${BGRN}  fwconsole ma upgradeall${NC}"
+fi
 fwconsole chown
 
 # Reload FreePBX
@@ -556,12 +765,11 @@ sleep $SLEEP_DELAY
 print_step "Cleaning Asterisk logs..."
 rm -f /var/log/asterisk/full /var/log/asterisk/fail2ban /var/spool/mail/root
 echo -e "Full, fail2ban, and root mail cleared. ${WHT}OK to proceed.${NC}"
-echo
 sleep $SLEEP_DELAY
 
 # Remove Heqet ISO components (if present)
-if [ -f /etc/systemd/system/in1click-firstboot.service ] || [ -f /etc/systemd/system/in1click-cleanup.service ]; then
-  print_step "Heqet ISO detected. Cleaning up..."
+if [ "$IS_HEQET" = true ]; then
+  print_step "IN1CLICK first-boot detected. Cleaning up..."
   echo
   touch /opt/in1click/.installed
   echo -e "  - Install marked as complete"
@@ -599,7 +807,7 @@ EOF
   rm -f /root/preseed.cfg /etc/preseed.cfg /opt/in1click/preseed.cfg 2>/dev/null || true
   echo -e "  - Preseed files cleaned up"
   echo
-  echo -e "Heqet cleanup complete. ${WHT}OK to proceed.${NC}"
+  echo -e "Cleanup complete. ${WHT}OK to proceed.${NC}"
   echo
   sleep $SLEEP_DELAY
 fi
@@ -614,15 +822,16 @@ sleep $SLEEP_DELAY
 # Install duration
 END_TIME=$(date +%s)
 ELAPSED=$((END_TIME - START_TIME))
-echo
 echo -e "${WHT}IN1CLICK completed in $((ELAPSED / 60)) min $((ELAPSED % 60)) sec.${NC}"
 echo
-echo -e "${LBLUE}Goodbye.${NC}"
+echo -e "${CYAN}Goodbye.${NC}"
 echo
 sleep 4
 
-# Restore getty on tty1 for login prompt after install
-print_step "Restoring login prompt on tty1..."
-systemctl unmask getty@tty1.service
-systemctl enable getty@tty1.service
-systemctl restart getty@tty1.service
+# Restore getty on tty1 for login prompt after install (Heqet only)
+if [ "$IS_HEQET" = true ]; then
+  print_step "Restoring login prompt on tty1..."
+  systemctl unmask getty@tty1.service
+  systemctl enable getty@tty1.service
+  systemctl restart getty@tty1.service
+fi
