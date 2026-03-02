@@ -21,7 +21,7 @@ VERSION="1.1.0"
 # ${VERSION}
 #
 # PUBLISHED:
-# 2nd March 2026 20:00 GMT
+# 2nd March 2026 19:00 GMT
 #
 # LICENSE:
 # GNU General Public License v3.0
@@ -93,6 +93,16 @@ handle_install_failure() {
   exit 1
 }
 sleep 4
+
+# Disable unattended-upgrades to prevent APT lock conflicts during install
+print_step "Disabling unattended-upgrades for this session..."
+systemctl stop unattended-upgrades 2>/dev/null || true
+systemctl stop apt-daily.timer 2>/dev/null || true
+systemctl stop apt-daily-upgrade.timer 2>/dev/null || true
+systemctl stop apt-daily.service 2>/dev/null || true
+systemctl stop apt-daily-upgrade.service 2>/dev/null || true
+echo -e "Unattended upgrades disabled for this session. ${WHT}OK to proceed.${NC}"
+sleep $SLEEP_DELAY
 
 # Heqet ISO detection (used to skip interactive prompts during unattended install)
 IS_HEQET=false
