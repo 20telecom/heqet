@@ -8,8 +8,8 @@
 # - Integrated FreePBX 17 IN1CLICK installer
 # - Modified boot configurations for unattended deployment
 #
-# Version: 1.0.0
-# Last Updated: 2026-01-17
+# Version: 1.2.0
+# Last Updated: 2026-03-02
 ################################################################################
 
 set -euo pipefail  # Fail fast on errors and unset vars
@@ -405,7 +405,7 @@ set default=0
 
 menuentry 'Automated Installation (Heqet)' {
     set background_color=black
-    linux    /install.amd/vmlinuz auto=true priority=critical preseed/file=/cdrom/preseed.cfg file=/cdrom/preseed.cfg console=tty1 splash
+    linux    /install.amd/vmlinuz auto=true priority=critical preseed/file=/cdrom/preseed.cfg file=/cdrom/preseed.cfg console=tty1 DEBIAN_FRONTEND=text debian-installer/framebuffer=false nosplash
     initrd   /install.amd/initrd.gz
 }
 
