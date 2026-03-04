@@ -101,8 +101,7 @@ heqet/
     ├── config/
     │   ├── preseed.cfg              # Debian preseed configuration
     │   ├── heqet-gate.sh            # Heqet installation gate script
-    │   ├── isolinux.cfg             # Custom BIOS boot menu
-    │   └── splash.png               # Boot splash screen
+    │   └── isolinux.cfg             # Custom BIOS boot menu
     ├── scripts/
     │   ├── build-iso.sh             # Main ISO build script
     │   ├── test-iso.sh              # QEMU testing script
