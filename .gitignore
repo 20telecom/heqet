@@ -1,0 +1,5 @@
+iso-build/build/*.iso
+iso-build/output/*.iso
+iso-build/output/*.md5
+iso-build/output/*.sha256
+iso-build/logs/*.log
