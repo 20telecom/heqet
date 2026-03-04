@@ -76,8 +76,8 @@ Total install time is approximately 25-30 minutes depending on hardware and mirr
 - [ISO Build Guide](ISO_BUILD.md) — Full technical guide for building the ISO
 - [ISO Build Steps (Codespaces)](ISO_BUILD_STEPS.md) — Codespaces quickstart for building the ISO
 - [AI Disclosure](AI_DISCLOSURE.md)
-- [Current Issues](CURRENT_ISSUES.md)
 - [Requirements](requirements.md)
+- [Issues](https://github.com/20telecom/heqet/issues)
 
 **Which doc should I read?**
 - Installing from the pre-built ISO? Read this README.
