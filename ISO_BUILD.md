@@ -37,7 +37,6 @@ The automated installation system consists of several integrated components:
 │  3. Preseed configuration (preseed.cfg)                     │
 │  4. IN1CLICK installer script                               │
 │  5. Modified boot configuration (isolinux/GRUB)             │
-│  6. Splash screen (splash.png)                              │
 └─────────────────────────────────────────────────────────────┘
                            │
                            ▼
@@ -114,7 +113,7 @@ sudo apt-get install -y qemu-system-x86 qemu-utils
 ### 1. Clone the Repository
 
 ```bash
-git clone https://github.com/kierknoby/heqet.git
+git clone https://github.com/20telecom/heqet.git
 cd heqet
 ```
 
@@ -132,8 +131,7 @@ heqet/
     ├── config/
     │   ├── preseed.cfg              # Debian preseed configuration
     │   ├── heqet-gate.sh            # Heqet installation gate script
-    │   ├── isolinux.cfg             # Custom BIOS boot menu
-    │   └── splash.png               # Boot splash screen
+    │   └── isolinux.cfg             # Custom BIOS boot menu
     ├── scripts/
     │   ├── build-iso.sh             # Main ISO build script
     │   ├── test-iso.sh              # QEMU testing script
@@ -162,14 +160,15 @@ The build script copies this into the ISO without modification.
 
 ### Quick Start
 
+From the repository root:
+
 ```bash
-cd iso-build/scripts
-sudo ./build-iso.sh
+sudo bash iso-build/scripts/build-iso.sh
 ```
 
 To specify a version string for the output filename:
 ```bash
-sudo ./build-iso.sh 1-2-0
+sudo bash iso-build/scripts/build-iso.sh 1-2-0
 # Produces: heqet_1-2-0.iso
 ```
 
@@ -179,7 +178,7 @@ If no version is specified, the default `0-0-17` is used.
 
 The script runs through four phases:
 
-**Phase 1: Download.** Downloads the Debian 12.8.0 AMD64 netinst ISO (~400MB) if not already cached in `build/`.
+**Phase 1: Download.** Downloads the Debian 12.8.0 AMD64 netinst ISO (~631MB) if not already cached in `build/`.
 
 **Phase 2: Extract.** Extracts the base ISO using bsdtar, 7z, or mount+rsync (whichever is available). Extraction is made writable for customisation.
 
@@ -189,13 +188,13 @@ The script runs through four phases:
 
 The extraction directory is cleaned up after a successful build.
 
-**Expected Duration:** 10-20 minutes depending on download speed.
+**Expected Duration:** Under 1 minute if the Debian ISO is cached, or around 1-2 minutes including the download.
 
 ### Build Artifacts
 
 ```
 iso-build/output/
-├── heqet_1-2-0.iso          # Custom ISO (~450MB)
+├── heqet_1-2-0.iso          # Custom ISO (~632MB)
 ├── heqet_1-2-0.iso.sha256   # SHA256 checksum
 └── heqet_1-2-0.iso.md5      # MD5 checksum
 ```
@@ -291,8 +290,7 @@ After installation completes:
 
 4. **Rebuild** after any config changes:
    ```bash
-   cd iso-build/scripts
-   sudo ./build-iso.sh
+   sudo bash iso-build/scripts/build-iso.sh
    ```
 
 ### Mass Deployment
@@ -366,16 +364,16 @@ The gate runs as a preseed early_command before any disks are touched. It:
 - Locale: en_US.UTF-8 (overridden by gate selection)
 - Timezone: UTC
 - Keyboard: us (overridden by gate selection)
-- Network: DHCP, hostname freepbx.sangoma.local
+- Network: DHCP, hostname freepbx.sangoma.local, domain localdomain
 - Partitioning: entire disk, ext4, atomic recipe
 - Root password: placeholder hash (overridden by gate password)
 - No non-root user created
-- Packages: curl, wget, gnupg2, ca-certificates, build-essential, git, sudo, iptables, net-tools, dnsutils, plymouth, cloud-init, and others
+- Packages: curl, wget, gnupg2, ca-certificates, lsb-release, apt-transport-https, software-properties-common, build-essential, git, sudo, iptables, net-tools, dnsutils, plymouth, plymouth-themes, cloud-init
 
 **late_command:** Hashes and applies the gate password. Copies and applies locale/keymap selections. Copies IN1CLICK and diagnostics to /opt/in1click/. Masks getty@tty1. Creates two systemd services:
 
-- **in1click-firstboot.service:** Runs IN1CLICK on tty1 after network-online.target and plymouth-quit.service. Type=oneshot with RemainAfterExit.
-- **in1click-cleanup.service:** Runs after firstboot. Disables both services, unmasks and restarts getty@tty1, removes both unit files from disk.
+- **in1click-firstboot.service:** Runs IN1CLICK on tty1 after network-online.target, local-fs.target, and plymouth-quit.service. Type=oneshot with RemainAfterExit. ConditionPathExists checks for /opt/in1click/IN1CLICK.
+- **in1click-cleanup.service:** Requires and runs after in1click-firstboot.service. ConditionPathExists checks for /opt/in1click/IN1CLICK. Disables both services, unmasks, enables, and restarts getty@tty1, then removes both unit files from disk.
 
 ### Boot Configuration
 
