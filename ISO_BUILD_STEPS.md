@@ -43,15 +43,6 @@ The build script handles everything: installs dependencies, downloads the Debian
 
 Build time is under 1 minute if the Debian ISO is cached, or around 1-2 minutes including the download.
 
-If your Codespace might disconnect during the build, run it in a screen session:
-
-```bash
-screen -S build
-sudo bash iso-build/scripts/build-iso.sh 1-2-0
-# Detach: Ctrl+A then D
-# Reattach: screen -r build
-```
-
 ---
 
 ## 4. Verify the Build
