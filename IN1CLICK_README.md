@@ -2,9 +2,9 @@
 
 # Version Update
 
-From 1.0.1 to 1.2.0 on 2nd March 2026 21:00 GMT by kierknoby
+From 1.2.0 to 1.2.1 on 3rd March 2026 by kierknoby
 
-Major update adding Heqet ISO support, live mirror monitoring via mirrors.in1.click, Debian 13 prevention, APT lock handling, and numerous hardening improvements. See changelog below.
+Merged the standalone deb.freepbx.org check into the mirrors.in1.click gate. The mirror_check_once function now parses deb_status alongside mirror_status, requiring both to pass. See changelog below.
 
 ---
 
@@ -14,42 +14,14 @@ Major update adding Heqet ISO support, live mirror monitoring via mirrors.in1.cl
 
 ---
 
-## Disclaimer
+## What You Get
 
-The bash script was first published to install FreePBX 17 on 5th August 2025. Contents are provided as-is without warranty of any kind, express or implied. You may modify, distribute, and use this script; 20tele.com accepts no responsibility for any damage or issues arising from its use.
-
-Please test it thoroughly in a controlled environment before deploying.
-
----
-
-## Features
-
-- Fast and reliable installation of FreePBX 17 on Debian 12.
-- Automated pre-checks: OS version, memory, swap, architecture, hostname, disk space, existing services.
-- Heqet ISO detection with unattended install support and automatic cleanup on completion.
-- Live mirror monitoring via mirrors.in1.click with 3 consecutive stability checks before proceeding.
-- Interactive retry menu when mirrors are unstable (Heqet auto-abandons with guidance).
-- Saturday mirror warning for known busy periods on the official FreePBX mirrors.
-- Pre-upgrade mirror re-check before module upgrades, with graceful skip if mirrors have degraded.
-- Debian 13 prevention: blocks stable and trixie references in APT sources before and after updates.
-- Disables unattended-upgrades to prevent APT lock conflicts during install.
-- APT lock wait checks before package updates and before FreePBX installation (5 min / 2 min timeouts).
-- Validates IP assignment (static or DHCP).
-- Verifies and installs required packages including curl, iptables, and others.
-- Confirms availability of deb.freepbx.org and the FreePBX GitHub installer before continuing.
-- Checks outbound internet connectivity and displays the public IP.
-- OS version re-check to ensure Debian did not upgrade from 12 (bookworm) to 13 (trixie).
-- Detects desktop environments and warns users to use a minimal server install.
-- Auto-fixes numeric-only hostnames to freepbx.sangoma.local.
-- Handles missing /etc/apt/sources.list (newer Debian .sources format).
-- Uses the official FreePBX install script from Sangoma.
-- Automatically upgrades modules and reloads FreePBX (skips gracefully if mirrors are bad).
-- Post-install verification that Apache is running and port 80 is accessible.
-- Cleans up Asterisk logs and system mail.
-- Clears bash history on completion.
-- Removes itself from disk after installation (manual installs only, skipped on Heqet).
-- Heqet-specific error messages when FreePBX, Asterisk, or MariaDB are already installed (guides user to boot from ISO again).
-- Getty restore on tty1 for Heqet ISO installs.
+✅ Debian 12 (Bookworm) — Latest stable release
+✅ FreePBX 17 — Latest version
+✅ Asterisk 22 — Telephony engine
+✅ MariaDB — Database server
+✅ Apache2 + PHP — Web server and runtime
+✅ All dependencies — Fully configured
 
 ---
 
@@ -79,12 +51,71 @@ wget https://raw.githubusercontent.com/20telecom/IN1CLICK/main/freepbx17-on-debi
 
 ---
 
+## Features
+
+- Fast and reliable installation of FreePBX 17 on Debian 12.
+- Automated pre-checks: OS version, memory, swap, architecture, hostname, disk space, existing services.
+- Heqet ISO detection with unattended install support and automatic cleanup on completion.
+- Live mirror monitoring via mirrors.in1.click with 3 consecutive stability checks before proceeding.
+- Integrated deb.freepbx.org (APT repo) health check within the mirror gate.
+- Interactive retry menu when mirrors are unstable (Heqet auto-abandons with guidance).
+- Saturday mirror warning for known busy periods on the official FreePBX mirrors.
+- Pre-upgrade mirror re-check before module upgrades, with graceful skip if mirrors have degraded.
+- Debian 13 prevention: blocks stable and trixie references in APT sources before and after updates.
+- Disables unattended-upgrades to prevent APT lock conflicts during install.
+- APT lock wait checks before package updates and before FreePBX installation (5 min / 2 min timeouts).
+- Validates IP assignment (static or DHCP).
+- Verifies and installs required packages including curl, iptables, and others.
+- Checks outbound internet connectivity and displays the public IP.
+- OS version re-check to ensure Debian did not upgrade from 12 (bookworm) to 13 (trixie).
+- Detects desktop environments and warns users to use a minimal server install.
+- Auto-fixes numeric-only hostnames to freepbx.sangoma.local.
+- Handles missing /etc/apt/sources.list (newer Debian .sources format).
+- Uses the official FreePBX install script from Sangoma.
+- Automatically upgrades modules and reloads FreePBX (skips gracefully if mirrors are bad).
+- Post-install verification that Apache is running and port 80 is accessible.
+- Cleans up Asterisk logs and system mail.
+- Clears bash history on completion.
+- Removes itself from disk after installation (manual installs only, skipped on Heqet).
+- Heqet-specific error messages when FreePBX, Asterisk, or MariaDB are already installed (guides user to boot from ISO again).
+- Getty restore on tty1 for Heqet ISO installs.
+
+---
+
+## Security & Upgrade Safety
+
+**APT Source Auto-Fix:**
+- 'stable' is replaced with 'bookworm' automatically.
+- 'trixie' lines are commented out.
+- All sources are checked again after `apt update`.
+- Warnings are printed if changes are made.
+
+**Upgrade Blocking:**
+- IN1CLICK will not allow upgrades to Debian 13 (Trixie).
+- Only Bookworm sources are supported.
+
+**APT Lock Protection:**
+- Unattended-upgrades, apt-daily, and apt-daily-upgrade are stopped before any APT operations.
+- Lock wait checks run before package updates (5 min timeout) and before FreePBX installation (2 min timeout).
+
+**Mirror Gate:**
+- 3 consecutive successful checks via mirrors.in1.click are required before proceeding.
+- Both module mirror status and deb.freepbx.org status must pass.
+- If mirrors are unstable, manual installs get an interactive retry menu; Heqet auto-abandons with guidance.
+
+**Self-Cleanup:**
+- IN1CLICK removes itself from disk after a successful manual install.
+- Bash history is cleared on completion.
+- Asterisk logs and system mail are cleaned.
+
+---
+
 ## Sample Output
 
 ```
 Hello. Thanks for trying IN1CLICK for FreePBX 17 on Debian 12 (bookworm).
 
-In case you need support from 20tele.com, this is IN1CLICK version 1.2.0.
+In case you need support from 20tele.com, this is IN1CLICK version 1.2.1.
 
 Disabling unattended-upgrades for this session...
 Unattended upgrades stopped. OK to proceed.
@@ -192,9 +223,6 @@ All 3 checks passed. Great job, Sangoma! OK to proceed.
 Checking for FreePBX GitHub installer at raw.githubusercontent.com...
 FreePBX GitHub installer is reachable. OK to proceed.
 
-Checking FreePBX installation repository (deb.freepbx.org)...
-FreePBX APT repository is reachable. OK to proceed.
-
 Checking outbound internet connectivity (public IP)...
 Outbound internet connectivity confirmed. Your Public IP is 203.0.113.45. OK to proceed.
 
@@ -238,6 +266,14 @@ Goodbye.
 
 ## Changelog
 
+### 1.2.1 (3rd March 2026)
+
+**Changed: deb.freepbx.org check merged into mirror gate**
+- Removed the standalone "Checking FreePBX installation repository (deb.freepbx.org)..." block.
+- Added deb_status variable and parsing in mirror_check_once to grep cli.sh output for Packages.gz valid, captcha, installations will fail, or not valid gzip data.
+- Gate logic now requires both mirror_status and deb_status to be good for a pass.
+- New feedback when mirrors pass but deb fails: "Module mirrors are stable but deb.freepbx.org (APT repo) is not healthy."
+
 ### 1.2.0 (2nd March 2026)
 
 **New: Heqet ISO support**
@@ -275,12 +311,12 @@ Goodbye.
 - Welcome message restyled: cyan greeting, yellow version line, removed version from greeting.
 - APT source check handles missing /etc/apt/sources.list (newer Debian .sources format).
 - /tmp noexec check fixed (was grep -q piped to grep -q, never matched).
-- deb.freepbx.org check kept as separate gate (different infrastructure to module mirrors).
 
 **Removed**
 - Reboot countdown and auto-reboot.
 - Legacy mirror check (mirror.freepbx.org).
 - Debian base mirror check (ftp.debian.org).
+- Standalone deb.freepbx.org check (now part of mirror gate).
 
 ### 1.1.0 (11th February 2026)
 
@@ -307,6 +343,31 @@ If something goes wrong during install, check the logs:
 - `fwconsole restart`
 
 If you need help, email support@20tele.com or open a ticket at https://support.20tele.com
+
+---
+
+## Credits
+
+- IN1CLICK Script: Developed by 20tele.com
+- FreePBX: Sangoma Technologies
+- Debian: Debian Project
+- Mirror Monitoring: mirrors.in1.click by 20tele.com
+
+---
+
+## Contributing
+
+Contributions are welcome! Please:
+1. Test thoroughly in a controlled environment
+2. Follow code style
+3. Document changes
+4. Submit pull requests with details
+
+---
+
+## Disclaimer
+
+This software is provided as-is without warranty of any kind, express or implied. You may modify, distribute, and use this script; 20tele.com accepts no responsibility for any damage or issues arising from its use. Please test thoroughly in a controlled environment before deploying.
 
 ---
 
