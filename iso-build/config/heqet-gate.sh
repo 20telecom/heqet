@@ -45,7 +45,7 @@ fi
 
 printf "\n"
 printf "  +---------------------------------------------------------+\n"
-printf "  |    Heqet 1.0.1  -  FreePBX 17  -  Zero-Touch Install    |\n"
+printf "  |    Heqet 1.2.0  -  FreePBX 17  -  Zero-Touch Install    |\n"
 printf "  +---------------------------------------------------------+\n"
 # Gold/Yellow color
 GOLD='\033[38;5;178m'
@@ -99,8 +99,21 @@ fi
 
 PASSWORD=$(tr -dc 'A-Za-z0-9' </dev/urandom | head -c 16)
 
-printf "  The root password: ${PASS_STYLE}%s${RESET}\n" "$PASSWORD"
-printf "\n  Store this password securely and select a region\n"
+printf "\n"
+# Cycle password through colours so the user notices it on the console
+for _colour in \
+    '\033[1;31m' \
+    '\033[1;32m' \
+    '\033[1;33m' \
+    '\033[1;34m' \
+    '\033[1;35m' \
+    '\033[1;36m' \
+    '\033[1;37m'; do
+    printf "\r  The root password: ${_colour}%s${RESET}  " "$PASSWORD"
+    sleep 1
+done
+printf "\r  The root password: ${PASS_STYLE}%s${RESET}  \n" "$PASSWORD"
+printf "\n  Store this password securely and select a locale\n"
 printf "%s" "$PASSWORD" > /tmp/heqet-pw
 unset PASSWORD
 
@@ -137,17 +150,22 @@ while true; do
     esac
 done
 
-if command -v debconf-set-selections >/dev/null 2>&1; then
-    export DEBIAN_FRONTEND=noninteractive
-    export DEBCONF_NONINTERACTIVE_SEEN=true
-    printf "debian-installer/locale string %s\n" "$locale_value" | debconf-set-selections >/dev/null 2>&1 || true
-    printf "keyboard-configuration/xkb-keymap select %s\n" "$keymap_value" | debconf-set-selections >/dev/null 2>&1 || true
-elif command -v debconf-set >/dev/null 2>&1; then
+# Write locale and keymap to temp files for late_command to apply
+printf "%s" "$locale_value" > /tmp/heqet-locale
+printf "%s" "$keymap_value" > /tmp/heqet-keymap
+
+# Try to set in debconf too (debconf-set is native to d-i, try it first)
+(
+if command -v debconf-set >/dev/null 2>&1; then
     debconf-set debian-installer/locale "$locale_value" >/dev/null 2>&1 || true
     debconf-set keyboard-configuration/xkb-keymap "$keymap_value" >/dev/null 2>&1 || true
+elif command -v debconf-set-selections >/dev/null 2>&1; then
+    printf "debian-installer/locale string %s\n" "$locale_value" | debconf-set-selections >/dev/null 2>&1 || true
+    printf "keyboard-configuration/xkb-keymap select %s\n" "$keymap_value" | debconf-set-selections >/dev/null 2>&1 || true
 else
-    printf "  ${RED}✗ Missing debconf tools; using default locale/keyboard.${RESET}\n"
+    printf "  ${RED}✗ Missing debconf tools; locale will be applied post-install.${RESET}\n"
 fi
+) </dev/null
 
 clear 2>/dev/null || true
 printf "\n  ${GREEN}     ■ Confirmation received ■${RESET}\n\n"
