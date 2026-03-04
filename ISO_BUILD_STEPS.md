@@ -41,7 +41,7 @@ Replace `1-2-0` with your desired version string.
 
 The build script handles everything: installs dependencies, downloads the Debian 12.8.0 netinst ISO (~631MB, skipped if cached), extracts it using bsdtar, injects preseed.cfg, heqet-gate.sh, and IN1CLICK, configures the boot loaders, generates the hybrid ISO, validates the output, and cleans up the extraction directory.
 
-Build time is under 1 minute if the Debian ISO is cached, or around 1-2 minutes including the download.
+Build time is under 1 minute if the Debian ISO is cached, or under 2 minutes including the download.
 
 ---
 
