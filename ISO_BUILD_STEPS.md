@@ -44,7 +44,7 @@ GitHub Codespaces provides a complete, cloud-based development environment that 
 
 1. Navigate to the Heqet repository on GitHub:
    ```
-   https://github.com/kierknoby/heqet
+   https://github.com/20telecom/heqet
    ```
 
 2. Click the green **"Code"** button in the top right
@@ -767,7 +767,7 @@ cd ~
 rm -rf /workspaces/Heqet
 
 # Clone fresh copy
-git clone https://github.com/kierknoby/heqet.git /workspaces/Heqet
+git clone https://github.com/20telecom/heqet.git /workspaces/Heqet
 
 # Navigate to scripts
 cd /workspaces/Heqet/iso-build/scripts
@@ -1619,7 +1619,7 @@ If you encounter issues not covered in this guide:
    ```
 
 4. **Contact Support:**
-   - **GitHub Issues (Primary):** https://github.com/kierknoby/heqet/issues
+   - **GitHub Issues (Primary):** https://github.com/20telecom/heqet/issues
    - **Email:** support@20tele.com
    - **Support Portal:** https://support.20tele.com
 
