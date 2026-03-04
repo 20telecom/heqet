@@ -22,7 +22,7 @@ Major update adding USB-safe disk detection, locale/keymap application from the 
 
 **WARNING:** The Heqet ISO is not currently suitable for use in production.
 
-**IMPORTANT:** Not currently suitable for USB boot. Tested on Vultr, Proxmox, and VirtualBox.
+**IMPORTANT:** Not currently suitable for USB boot: although it will work, more testing is required. ISO thoroughly tested on Vultr, Proxmox, and VirtualBox.
 
 Download a beta version at https://heqet.in1.click/beta/freepbx17.iso
 
