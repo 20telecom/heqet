@@ -10,7 +10,7 @@
 
 From 1.0.0 to 1.2.0 on 4th March 2026 by kierknoby
 
-Skipped 1.1.0 to keep Heqet versioning aligned with IN1CLICK 1.2.0.
+Skipped 1.1.0 to keep Heqet versioning aligned with IN1CLICK 1.2.x.
 
 Major update adding USB-safe disk detection, locale/keymap application from the gate, plymouth-quit ordering for firstboot, and GRUB parameter alignment with isolinux. Build script updated to v1.2.0 with DEBCONF_DEBUG removed and GRUB nosplash added. See changelog below.
 
@@ -154,7 +154,7 @@ heqet/
 ### 1.2.0 (4th March 2026)
 
 **Heqet Gate (heqet-gate.sh)**
-- Version bump from 1.0.1 to 1.2.0 in banner.
+- Version bump from 1.0.1 to 1.2.0 in banner (skipped 1.1.0 to keep Heqet versioning aligned with IN1CLICK 1.2.x).
 - Password display now cycles through 7 ANSI colours before settling.
 - Changed prompt wording from "select a region" to "select a locale".
 - Locale and keymap values written to /tmp/heqet-locale and /tmp/heqet-keymap for late_command.
