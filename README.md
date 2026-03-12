@@ -16,7 +16,7 @@ Update adding expanded locale options in the gate (en_CA, en_AU, and Other), dd 
 
 ## Overview
 
-**Heqet** is a zero-touch installer for FreePBX 17 on Debian 12, built and maintained by 20tele.com. Boot the ISO, confirm the Heqet gate, and walk away. The system installs Debian, applies your locale and root password, then runs IN1CLICK to deploy FreePBX 17 automatically.
+**Heqet** is a streamlined installer for FreePBX 17 and Debian 12, built and maintained by 20tele.com. Boot the ISO, confirm locale at the Heqet gate, wait for Debian 12 to install, remove the ISO and walk away. The system installs Debian, applies your locale and root password, then runs IN1CLICK to deploy FreePBX 17 automatically on startup.
 
 **WARNING:** Test in a non-production environment before relying on it. ISO thoroughly tested on Vultr, Proxmox, and VirtualBox.
 
