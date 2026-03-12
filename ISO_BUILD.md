@@ -32,7 +32,7 @@ The automated installation system consists of several integrated components:
 ┌─────────────────────────────────────────────────────────────┐
 │                    Heqet Custom ISO                          │
 ├─────────────────────────────────────────────────────────────┤
-│  1. Base Debian 12.8.0 netinst ISO                          │
+│  1. Base Debian 12.13.0 netinst ISO                         │
 │  2. Heqet gate script (heqet-gate.sh)                       │
 │  3. Preseed configuration (preseed.cfg)                     │
 │  4. IN1CLICK installer script                               │
@@ -137,7 +137,7 @@ heqet/
     │   ├── test-iso.sh              # QEMU testing script
     │   └── diagnostics.sh           # System diagnostics tool
     ├── build/                       # (created during build)
-    │   └── debian-12.8.0-*.iso      # Downloaded base ISO
+    │   └── debian-12.13.0-*.iso     # Downloaded base ISO
     ├── output/                      # (created during build)
     │   ├── heqet_*.iso              # Final custom ISO
     │   ├── heqet_*.iso.sha256       # SHA256 checksum
@@ -166,19 +166,13 @@ From the repository root:
 sudo bash iso-build/scripts/build-iso.sh
 ```
 
-To specify a version string for the output filename:
-```bash
-sudo bash iso-build/scripts/build-iso.sh 1-2-0
-# Produces: heqet_1-2-0.iso
-```
-
-If no version is specified, the default `0-0-17` is used.
+The output filename is always `heqet_1-3-0.iso`, derived from the version hardcoded in the build script.
 
 ### Build Process
 
 The script runs through four phases:
 
-**Phase 1: Download.** Downloads the Debian 12.8.0 AMD64 netinst ISO (~631MB) if not already cached in `build/`.
+**Phase 1: Download.** Downloads the Debian 12.13.0 AMD64 netinst ISO (~631MB) if not already cached in `build/`.
 
 **Phase 2: Extract.** Extracts the base ISO using bsdtar, 7z, or mount+rsync (whichever is available). Extraction is made writable for customisation.
 
@@ -194,9 +188,9 @@ The extraction directory is cleaned up after a successful build.
 
 ```
 iso-build/output/
-├── heqet_1-2-0.iso          # Custom ISO (~632MB)
-├── heqet_1-2-0.iso.sha256   # SHA256 checksum
-└── heqet_1-2-0.iso.md5      # MD5 checksum
+├── heqet_1-3-0.iso          # Custom ISO (~632MB)
+├── heqet_1-3-0.iso.sha256   # SHA256 checksum
+└── heqet_1-3-0.iso.md5      # MD5 checksum
 ```
 
 ## Testing the ISO
@@ -448,6 +442,6 @@ This software is provided as-is without warranty of any kind, express or implied
 
 ---
 
-**Version:** 1.2.0
-**Last Updated:** 4th March 2026
+**Version:** 1.3.0
+**Last Updated:** 11th March 2026
 **Status:** Active Development

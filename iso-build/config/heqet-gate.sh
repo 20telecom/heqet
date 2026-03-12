@@ -38,14 +38,14 @@ clear 2>/dev/null || true
 
 # Minimal color palette + accent (auto-disables if not a tty)
 if [ -t 1 ]; then
-    RED="\033[1;31m"; GREEN="\033[1;32m"; CYAN="\033[1;36m"; MAG="\033[1;35m"; GRAY="\033[2;37m"; RESET="\033[0m"; PASS_STYLE="\033[1;37m"
+    RED="\033[1;31m"; GREEN="\033[1;32m"; YELLOW="\033[1;33m"; CYAN="\033[1;36m"; MAG="\033[1;35m"; GRAY="\033[2;37m"; RESET="\033[0m"; PASS_STYLE="\033[1;37m"
 else
-    RED=""; GREEN=""; CYAN=""; MAG=""; GRAY=""; RESET=""; PASS_STYLE=""
+    RED=""; GREEN=""; YELLOW=""; CYAN=""; MAG=""; GRAY=""; RESET=""; PASS_STYLE=""
 fi
 
 printf "\n"
 printf "  +---------------------------------------------------------+\n"
-printf "  |    Heqet 1.2.0  -  FreePBX 17  -  Zero-Touch Install    |\n"
+printf "  |     Heqet 1.3.0 feat. IN1CLICK 1.3.0  -  FreePBX 17     |\n"
 printf "  +---------------------------------------------------------+\n"
 # Gold/Yellow color
 GOLD='\033[38;5;178m'
@@ -54,7 +54,7 @@ BWHITE='\033[1;37m'
 NC='\033[0m' # No Color
 
 printf "\n"
-printf "${BWHITE}                 Egyptian Eyes by 20tele.com${NC}\n"
+printf "${BWHITE}                  Egyptian Eyes by 20tele.com${NC}\n"
 printf "\n"
 printf "${GOLD}                                 ////${NC}\n"
 printf "${GOLD}               ////             ////       ////${NC}\n"
@@ -118,10 +118,11 @@ printf "%s" "$PASSWORD" > /tmp/heqet-pw
 unset PASSWORD
 
 while true; do
-    printf "    1) en_US\n"
-    printf "    2) en_GB\n"
-    printf "    0) Abort\n"
-    printf "  Choose one to proceed with the installation [0]: "
+    printf "\n"
+    printf "  1) en_US    3) en_CA    5) Other\n"
+    printf "  2) en_GB    4) en_AU    0) Abort\n"
+    printf "\n"
+    printf "  If you have internet, choose one to proceed [0]: "
     read -r region_choice
     printf "${RESET}"
 
@@ -144,8 +145,47 @@ while true; do
             keymap_value="gb"
             break
             ;;
+        3)
+            locale_value="en_CA.UTF-8"
+            keymap_value="us"
+            break
+            ;;
+        4)
+            locale_value="en_AU.UTF-8"
+            keymap_value="us"
+            break
+            ;;
+        5)
+            printf "\n"
+            printf "  ${YELLOW}Locale not listed. Installing with en_US.${RESET}\n"
+            printf "\n"
+            printf "  To change locale after installation, run:\n"
+            printf "    dpkg-reconfigure locales\n"
+            printf "    dpkg-reconfigure keyboard-configuration\n"
+            printf "  Reboot system for changes to take effect.\n"
+            printf "\n"
+            printf "  Please confirm your locale selection [5]: "
+            read -r confirm_choice
+            [ -z "$confirm_choice" ] && confirm_choice="5"
+            case "$confirm_choice" in
+                1) locale_value="en_US.UTF-8"; keymap_value="us"; break ;;
+                2) locale_value="en_GB.UTF-8"; keymap_value="gb"; break ;;
+                3) locale_value="en_CA.UTF-8"; keymap_value="us"; break ;;
+                4) locale_value="en_AU.UTF-8"; keymap_value="us"; break ;;
+                5) locale_value="en_US.UTF-8"; keymap_value="us"; break ;;
+                ""|0)
+                    clear 2>/dev/null || true
+                    printf "\n  ${RED}■ Installation aborted ■${RESET}\n\n"
+                    printf "  Rebooting in 5 seconds...\n\n"
+                    sleep 5
+                    reboot
+                    exit 1
+                    ;;
+                *) printf "\n  ${RED}Invalid choice. Try again.${RESET}\n\n" ;;
+            esac
+            ;;
         *)
-            printf "  ${RED}Invalid choice. Try again.${RESET}\n\n"
+            printf "\n  ${RED}Invalid choice. Try again.${RESET}\n"
             ;;
     esac
 done
