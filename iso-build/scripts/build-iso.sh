@@ -8,8 +8,8 @@
 # - Integrated FreePBX 17 IN1CLICK installer
 # - Modified boot configurations for unattended deployment
 #
-# Version: 1.2.0
-# Last Updated: 2026-03-02
+# Version: See VERSION variable below
+# Last Updated: 2026-03-10
 ################################################################################
 
 set -euo pipefail  # Fail fast on errors and unset vars
@@ -32,13 +32,10 @@ REPO_ROOT="$(dirname "$ISO_BUILD_DIR")"
 
 
 # ISO configuration
-if [ -n "${1:-}" ]; then
-    ISO_VERSION="$1"
-else
-    ISO_VERSION="0-0-17"
-fi
+VERSION="1.3.0"
+ISO_VERSION="${VERSION//./-}"
 OUTPUT_NAME="heqet_${ISO_VERSION}.iso"
-ISO_LABEL="Heqet Debian 12"
+ISO_LABEL="Heqet ${VERSION}"
 # DEBIAN_VERSION will be detected automatically
 DEBIAN_VERSION=""
 DEBIAN_ISO_NAME=""
@@ -113,10 +110,10 @@ check_root() {
 }
 
 detect_latest_debian_iso() {
-    log_info "Using static Debian 12.8.0 ISO (Bookworm, EOL)"
-    DEBIAN_VERSION="12.8.0"
-    DEBIAN_ISO_NAME="debian-12.8.0-amd64-netinst.iso"
-    DEBIAN_ISO_URL="https://cdimage.debian.org/cdimage/archive/12.8.0/amd64/iso-cd/debian-12.8.0-amd64-netinst.iso"
+    log_info "Using static Debian 12.13.0 ISO (Bookworm)"
+    DEBIAN_VERSION="12.13.0"
+    DEBIAN_ISO_NAME="debian-12.13.0-amd64-netinst.iso"
+    DEBIAN_ISO_URL="https://cdimage.debian.org/cdimage/archive/12.13.0/amd64/iso-cd/debian-12.13.0-amd64-netinst.iso"
     log_info "Will use: $DEBIAN_ISO_NAME"
 }
 
@@ -324,16 +321,32 @@ customize_iso() {
     log_info "File: in1click/IN1CLICK ($(du -h "$IN1CLICK_SCRIPT" | cut -f1))"
     echo ""
     
-    # Step 4: Configure BIOS boot (isolinux)
-    log_info "Step 4: Configuring boot loader (BIOS/isolinux)..."
+    # Step 4: Replace shim with latest non-revoked version from Debian repos
+    log_info "Step 4: Updating UEFI shim to prevent revoked bootloader warning..."
+    local shim_dst="$ISO_EXTRACT_DIR/EFI/boot/bootx64.efi"
+    if [ -f "$shim_dst" ]; then
+        apt-get install -y shim-signed 2>/dev/null || true
+        if [ -f /usr/lib/shim/shimx64.efi.signed ]; then
+            cp /usr/lib/shim/shimx64.efi.signed "$shim_dst"
+            log_info "✓ UEFI shim replaced at EFI/boot/bootx64.efi ($(du -h "$shim_dst" | cut -f1))"
+        else
+            log_warn "shim-signed installed but shimx64.efi.signed not found; revoked bootloader warning may appear in Rufus"
+        fi
+    else
+        log_warn "EFI/boot/bootx64.efi not found in extracted ISO; skipping shim replacement"
+    fi
+    echo ""
+
+    # Step 5: Configure BIOS boot (isolinux)
+    log_info "Step 5: Configuring boot loader (BIOS/isolinux)..."
     configure_isolinux
     if [ -f "$CUSTOM_ISOLINUX_CFG" ] && [ -f "$ISO_EXTRACT_DIR/isolinux/isolinux.cfg" ]; then
         verify_match "$CUSTOM_ISOLINUX_CFG" "$ISO_EXTRACT_DIR/isolinux/isolinux.cfg" "isolinux.cfg"
     fi
     echo ""
     
-    # Step 5: Configuring boot loader (UEFI/GRUB)
-    log_info "Step 5: Configuring boot loader (UEFI/GRUB)..."
+    # Step 6: Configuring boot loader (UEFI/GRUB)
+    log_info "Step 6: Configuring boot loader (UEFI/GRUB)..."
     configure_grub
     echo ""
     
@@ -398,14 +411,15 @@ configure_grub() {
     
     log_info "Modifying GRUB menu..."
     
-    # Add automated installation entry at the beginning
+    # Boot immediately into the Heqet automated installation entry.
+    # timeout=0 means no keypress required on any hardware including USB boot.
     cat > "${grub_cfg}.new" << 'EOF'
-set timeout=-1
+set timeout=0
 set default=0
 
 menuentry 'Automated Installation (Heqet)' {
     set background_color=black
-    linux    /install.amd/vmlinuz auto=true priority=critical preseed/file=/cdrom/preseed.cfg file=/cdrom/preseed.cfg console=tty1 DEBIAN_FRONTEND=text debian-installer/framebuffer=false nosplash
+    linux    /install.amd/vmlinuz auto=true priority=critical preseed/file=/cdrom/preseed.cfg file=/cdrom/preseed.cfg console=tty1 DEBIAN_FRONTEND=text debian-installer/framebuffer=false nosplash cdrom-detect/try-usb=true
     initrd   /install.amd/initrd.gz
 }
 
@@ -419,6 +433,7 @@ EOF
     log_info "✓ GRUB configuration updated"
     log_info "- Auto-install entry added"
     log_info "- Preseed parameters configured"
+    log_info "- Timeout set to 0 (boots immediately)"
 }
 
 ################################################################################
@@ -439,7 +454,10 @@ generate_iso() {
     find . -type f -not -path './isolinux/*' -not -path './md5sum.txt' -print0 | xargs -0 md5sum > md5sum.txt 2>/dev/null || true
     cd "$SCRIPT_DIR"
     
-    # Create ISO using xorriso
+    # Create hybrid ISO (BIOS + UEFI) using xorriso.
+    # -append_partition 2 0xef embeds the EFI image as a proper GPT partition
+    # entry, which is required for UEFI boot on physical hardware including
+    # USB sticks where firmware may not find the EFI image via hybrid MBR alone.
     xorriso -as mkisofs \
         -r -V "$ISO_LABEL" \
         -o "$output_iso" \
@@ -456,6 +474,7 @@ generate_iso() {
         -no-emul-boot \
         -isohybrid-gpt-basdat \
         -isohybrid-apm-hfsplus \
+        -append_partition 2 0xef "$ISO_EXTRACT_DIR/boot/grub/efi.img" \
         "$ISO_EXTRACT_DIR" \
         > "$xorriso_log" 2>&1 || {
         log_error "Failed to create ISO image"
