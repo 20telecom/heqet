@@ -47,7 +47,7 @@ fi
 
 printf "\n"
 printf "  +---------------------------------------------------------+\n"
-printf "  |   Heqet %s feat. IN1CLICK %s  -  FreePBX 17   |\n" "$HEQET_VERSION" "$IN1CLICK_VERSION"
+printf "  |   Heqet ISO %s feat. IN1CLICK %s  -  FreePBX 17   |\n" "$HEQET_VERSION" "$IN1CLICK_VERSION"
 printf "  +---------------------------------------------------------+\n"
 # Gold/Yellow color
 GOLD='\033[38;5;178m'
