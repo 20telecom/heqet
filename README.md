@@ -2,15 +2,15 @@
 
 # Debian 12 + FreePBX 17 + Asterisk 22 + MariaDB 10
 
-**Version:** 1.3.0
-**Last Updated:** 11th March 2026
+**Version:** 1.3.1
+**Last Updated:** 13th March 2026
 **Status:** Active Development
 
 # Version Update
 
-From 1.2.0 to 1.3.0 on 11th March 2026 by kierknoby
+From 1.3.0 to 1.3.1 on 13th March 2026 by kierknoby
 
-Update adding expanded locale options in the gate (en_CA, en_AU, and Other), dd wipe of the target disk before partitioning to fix failures on machines with existing partition tables, console-setup preseed settings to fix console-setup.service failure on first boot, cdrom-detect/try-usb=true in both isolinux and GRUB to fix installation media detection, and a base Debian ISO update from 12.8.0 to 12.13.0. See changelog below.
+Update adding disk detection and display in the Heqet gate, showing the target disk name and size in the wipe warning. VERSION and IN1CLICK_VERSION variables added to the gate so version numbers only need updating in one place. Build script updated to accept the ISO version as a command line argument. See changelog below.
 
 ---
 
@@ -20,7 +20,7 @@ Update adding expanded locale options in the gate (en_CA, en_AU, and Other), dd 
 
 **WARNING:** Test in a non-production environment before relying on it. ISO thoroughly tested on Vultr, Proxmox, and VirtualBox.
 
-**IMPORTANT:** USB boot has been tested on a small number of machines as of 11th March 2026. It works on modern UEFI hardware but older machines and those with unusual boot firmware may behave differently.
+**IMPORTANT:** USB boot has been tested on a small number of machines as of 13th March 2026. It works on modern UEFI hardware but older machines and those with unusual boot firmware may behave differently.
 
 Download a beta version at https://heqet.in1.click/beta/freepbx17.iso
 
@@ -42,7 +42,7 @@ Download a beta version at https://heqet.in1.click/beta/freepbx17.iso
 1. Download the ISO from https://heqet.in1.click/beta/freepbx17.iso
 2. Attach it to a VM or write it to a USB drive (see IMPORTANT note above regarding USB boot compatibility)
 3. Boot from the ISO
-4. The Heqet gate displays a random root password and a 10-second wipe warning
+4. The Heqet gate displays the target disk name and size, generates a random root password, and shows a 10-second wipe warning
 5. Note the password, select a locale (en_US, en_GB, en_CA, en_AU, or Other), or press Enter/0 to abort
 6. The installation runs unattended from this point
 7. After reboot, IN1CLICK installs FreePBX 17 automatically on tty1
@@ -133,7 +133,7 @@ heqet/
 
 ## Architecture
 
-**Heqet Gate (heqet-gate.sh):** Runs before any disks are touched. Detects existing installs, generates the root password, collects locale/keymap selection, and writes values to temp files for the preseed to consume.
+**Heqet Gate (heqet-gate.sh):** Runs before any disks are touched. Detects existing installs, detects the target disk and displays it with size in the wipe warning, generates the root password, collects locale/keymap selection, and writes values to temp files for the preseed to consume.
 
 **Preseed (preseed.cfg):** Automates Debian installation. Includes USB-safe disk detection in early_command, runtime disk override via partman/early_command, and a late_command that applies the gate password, locale, and keymap, deploys IN1CLICK, and creates systemd firstboot/cleanup services.
 
@@ -144,6 +144,17 @@ heqet/
 ---
 
 ## Changelog
+
+### 1.3.1 (13th March 2026)
+
+**Heqet Gate (heqet-gate.sh)**
+- Added VERSION and IN1CLICK_VERSION variables at the top of the script, referenced in the banner printf so version numbers only need updating in one place.
+- Added disk detection using /proc/cmdline and candidate list, excluding the boot device, with NVMe sed fix.
+- Added disk size display using blockdev --getsize64.
+- Replaced generic "on the server" WARNING with a three-state output: disk and size detected shows the disk name and size, size undetectable shows the disk name with "size unknown", disk undetectable shows "Target disk unknown. Please abort and request support!" with no automatic reboot.
+
+**Build Script (build-iso.sh)**
+- Accepts the ISO version as an optional first argument, normalising dash-separated input (e.g. 1-3-1) to dot notation internally, so the version no longer needs to be edited in the script before each build.
 
 ### 1.3.0 (11th March 2026)
 
