@@ -34,10 +34,10 @@ sudo rm /etc/apt/sources.list.d/yarn.list 2>/dev/null; sudo rm /etc/apt/sources.
 Run from the repository root:
 
 ```bash
-sudo bash iso-build/scripts/build-iso.sh 1-3-0
+sudo bash iso-build/scripts/build-iso.sh 1-3-1
 ```
 
-Replace `1-3-0` with your desired version string.
+Replace `1-3-1` with your desired version string.
 
 The build script handles everything: installs dependencies, downloads the Debian 12.13.0 netinst ISO (~686MB, skipped if cached), extracts it using bsdtar, injects preseed.cfg, heqet-gate.sh, and IN1CLICK, configures the boot loaders, generates the hybrid ISO, validates the output, and cleans up the extraction directory.
 
@@ -51,11 +51,11 @@ The build ends with a summary:
 
 ```
 ╔═══════════════════════════════════════════════════════════════╗
-║           You can download and use heqet_1-3-0.iso            ║
+║           You can download and use heqet_1-3-1.iso            ║
 ╚═══════════════════════════════════════════════════════════════╝
 
 Build Summary:
-Custom ISO: /workspaces/heqet/iso-build/output/heqet_1-3-0.iso
+Custom ISO: /workspaces/heqet/iso-build/output/heqet_1-3-1.iso
 File size: 686M
 ```
 
@@ -63,16 +63,16 @@ Verify the checksum:
 
 ```bash
 cd iso-build/output
-sha256sum -c heqet_1-3-0.iso.sha256
+sha256sum -c heqet_1-3-1.iso.sha256
 ```
 
-Expected output: `heqet_1-3-0.iso: OK`
+Expected output: `heqet_1-3-1.iso: OK`
 
 ---
 
 ## 5. Download the ISO
 
-In the VS Code sidebar, navigate to `iso-build/output/`, right-click `heqet_1-3-0.iso`, and select **Download**.
+In the VS Code sidebar, navigate to `iso-build/output/`, right-click `heqet_1-3-1.iso`, and select **Download**.
 
 Also download the `.sha256` file so you can verify the download on your local machine.
 
@@ -99,4 +99,4 @@ sudo rm -rf build/*
 
 ---
 
-**Last Updated:** 11th March 2026
+**Last Updated:** 13th March 2026
