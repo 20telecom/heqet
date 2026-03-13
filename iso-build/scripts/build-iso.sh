@@ -32,7 +32,9 @@ REPO_ROOT="$(dirname "$ISO_BUILD_DIR")"
 
 
 # ISO configuration
-VERSION="1.3.0"
+# Accept version as first argument (e.g. 1-3-1 or 1.3.1), falling back to default
+VERSION="${1:-1.3.0}"
+VERSION="${VERSION//-/.}"
 ISO_VERSION="${VERSION//./-}"
 OUTPUT_NAME="heqet_${ISO_VERSION}.iso"
 ISO_LABEL="Heqet ${VERSION}"
