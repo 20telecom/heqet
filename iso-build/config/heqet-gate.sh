@@ -1,7 +1,7 @@
 #!/bin/sh
 # Heqet Installation Gate - runs before any install actions
 HEQET_VERSION="1.3.1"
-IN1CLICK_VERSION="1.3.0"
+IN1CLICK_VERSION="1.3.2"
 
 INSTALLED_MARKER="/opt/in1click/.installed"
 for disk in /dev/sda1 /dev/vda1 /dev/nvme0n1p1; do
