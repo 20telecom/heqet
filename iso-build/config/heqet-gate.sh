@@ -1,5 +1,7 @@
 #!/bin/sh
 # Heqet Installation Gate - runs before any install actions
+HEQET_VERSION="1.3.1"
+IN1CLICK_VERSION="1.3.2"
 
 INSTALLED_MARKER="/opt/in1click/.installed"
 for disk in /dev/sda1 /dev/vda1 /dev/nvme0n1p1; do
@@ -45,7 +47,7 @@ fi
 
 printf "\n"
 printf "  +---------------------------------------------------------+\n"
-printf "  |     Heqet 1.3.0 feat. IN1CLICK 1.3.0  -  FreePBX 17     |\n"
+printf "  |   Heqet ISO %s feat. IN1CLICK %s  -  FreePBX 17   |\n" "$HEQET_VERSION" "$IN1CLICK_VERSION"
 printf "  +---------------------------------------------------------+\n"
 # Gold/Yellow color
 GOLD='\033[38;5;178m'
@@ -73,7 +75,47 @@ printf "  +---------------------------------------------------------+\n"
 printf "  |    You are installing FreePBX 17 with the Heqet ISO     |\n"
 printf "  +---------------------------------------------------------+\n"
 printf "\n"
-printf "\033[1;31m       WARNING: This will WIPE EVERYTHING on the server\033[0m\n"
+
+# Detect target disk using /proc/cmdline and candidate list.
+# lsblk is not available in the Debian installer environment.
+BOOT_DEV=""
+if [ -f /proc/cmdline ]; then
+    for param in $(cat /proc/cmdline); do
+        case "$param" in
+            root=*) BOOT_DEV="${param#root=}" ;;
+        esac
+    done
+fi
+if [ -z "$BOOT_DEV" ] || [ ! -b "$BOOT_DEV" ]; then
+    BOOT_DEV=$(mount | grep ' /cdrom ' | awk '{print $1}' | sed 's/p\?[0-9]*$//')
+fi
+BOOT_DISK=$(echo "$BOOT_DEV" | sed 's/p\?[0-9]*$//')
+TARGET_DISK=""
+for CANDIDATE in /dev/sda /dev/sdb /dev/vda /dev/nvme0n1 /dev/mmcblk0; do
+    if [ -b "$CANDIDATE" ] && [ "$CANDIDATE" != "$BOOT_DISK" ]; then
+        TARGET_DISK="$CANDIDATE"
+        break
+    fi
+done
+
+# Get disk size using blockdev (available in the Debian installer environment via busybox)
+TARGET_SIZE=""
+if [ -n "$TARGET_DISK" ] && command -v blockdev >/dev/null 2>&1; then
+    BYTES=$(blockdev --getsize64 "$TARGET_DISK" 2>/dev/null)
+    if [ -n "$BYTES" ] && [ "$BYTES" -gt 0 ] 2>/dev/null; then
+        GB=$(( BYTES / 1024 / 1024 / 1024 ))
+        TARGET_SIZE="${GB}GB"
+    fi
+fi
+
+if [ -z "$TARGET_DISK" ]; then
+    printf "\033[1;31m  WARNING: Target disk unknown. Please abort and request support!\033[0m\n"
+elif [ -z "$TARGET_SIZE" ]; then
+    printf "\033[1;31m  WARNING: This will WIPE EVERYTHING on %s (size unknown)\033[0m\n" "$TARGET_DISK"
+else
+    printf "\033[1;31m  WARNING: This will WIPE EVERYTHING on %s (%s)\033[0m\n" "$TARGET_DISK" "$TARGET_SIZE"
+fi
+
 printf "  "
 i=10
 while [ "$i" -ge 1 ]; do
