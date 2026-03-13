@@ -166,7 +166,7 @@ From the repository root:
 sudo bash iso-build/scripts/build-iso.sh
 ```
 
-The output filename is always `heqet_1-3-0.iso`, derived from the version hardcoded in the build script.
+The output filename is always `heqet_1-3-2.iso`, derived from the version hardcoded in the build script.
 
 ### Build Process
 
@@ -188,9 +188,9 @@ The extraction directory is cleaned up after a successful build.
 
 ```
 iso-build/output/
-├── heqet_1-3-0.iso          # Custom ISO (~632MB)
-├── heqet_1-3-0.iso.sha256   # SHA256 checksum
-└── heqet_1-3-0.iso.md5      # MD5 checksum
+├── heqet_1-3-2.iso          # Custom ISO (~632MB)
+├── heqet_1-3-2.iso.sha256   # SHA256 checksum
+└── heqet_1-3-2.iso.md5      # MD5 checksum
 ```
 
 ## Testing the ISO
