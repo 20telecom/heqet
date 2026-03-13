@@ -891,6 +891,7 @@ fwconsole ma upgradeall || echo -e "${BYEL}Module upgrade completed with some wa
 
 print_step "Setting correct file ownership..."
 fwconsole chown
+echo
 echo -e "File ownership set. ${WHT}OK to proceed.${NC}"
 sleep $SLEEP_DELAY
 
