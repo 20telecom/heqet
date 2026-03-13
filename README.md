@@ -2,15 +2,15 @@
 
 # Debian 12 + FreePBX 17 + Asterisk 22 + MariaDB 10
 
-**Version:** 1.3.1
+**Version:** 1.3.2
 **Last Updated:** 13th March 2026
 **Status:** Active Development
 
 # Version Update
 
-From 1.3.0 to 1.3.1 on 13th March 2026 by kierknoby
+From 1.3.1 to 1.3.2 on 13th March 2026 by kierknoby
 
-Update adding disk detection and display in the Heqet gate, showing the target disk name and size in the wipe warning. VERSION and IN1CLICK_VERSION variables added to the gate so version numbers only need updating in one place. Build script updated to accept the ISO version as a command line argument. See changelog below.
+Update increasing the boot wait in the Heqet gate to address a race condition where localechooser was not ready when user input arrived on isolated virtualisation tiers. See changelog below.
 
 ---
 
@@ -42,7 +42,7 @@ Download a beta version at https://heqet.in1.click/beta/freepbx17.iso
 1. Download the ISO from https://heqet.in1.click/beta/freepbx17.iso
 2. Attach it to a VM or write it to a USB drive (see IMPORTANT note above regarding USB boot compatibility)
 3. Boot from the ISO
-4. The Heqet gate displays the target disk name and size, generates a random root password, and shows a 10-second wipe warning
+4. The Heqet gate displays the target disk name and size, generates a random root password, and shows a 30-second wipe warning
 5. Note the password, select a locale (en_US, en_GB, en_CA, en_AU, or Other), or press Enter/0 to abort
 6. The installation runs unattended from this point
 7. After reboot, IN1CLICK installs FreePBX 17 automatically on tty1
@@ -144,6 +144,11 @@ heqet/
 ---
 
 ## Changelog
+
+### 1.3.2 (13th March 2026)
+
+**Heqet Gate (heqet-gate.sh)**
+- Increased countdown from 10 to 30 seconds and added a two-stage boot wait with inline message overwrite. "Ensuring boot finishes, please wait..." is replaced in-place by "Generating the root password for you..." with 10 second sleeps either side, to address a race condition where localechooser was not ready when user input arrived on isolated virtualisation tiers such as Vultr dedicated cloud compute.
 
 ### 1.3.1 (13th March 2026)
 
