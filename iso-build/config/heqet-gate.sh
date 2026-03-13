@@ -1,6 +1,6 @@
 #!/bin/sh
 # Heqet Installation Gate - runs before any install actions
-HEQET_VERSION="1.3.1"
+HEQET_VERSION="1.3.2"
 IN1CLICK_VERSION="1.3.2"
 
 INSTALLED_MARKER="/opt/in1click/.installed"
@@ -117,9 +117,9 @@ else
 fi
 
 printf "  "
-i=10
+i=30
 while [ "$i" -ge 1 ]; do
-    if [ "$i" -eq 10 ]; then
+    if [ "$i" -eq 30 ]; then
         printf "%s" "$i"
     else
         printf "\r  %2s" "$i"
@@ -128,7 +128,10 @@ while [ "$i" -ge 1 ]; do
     i=$((i - 1))
 done
 printf "\r    \r\n"
-printf "  Generating root password for you...\n"
+printf "  Ensuring boot finishes, please wait..."
+sleep 10
+printf "\r  Generating the root password for you...\n"
+sleep 10
 set +x
 
 if ! command -v busybox >/dev/null 2>&1; then
