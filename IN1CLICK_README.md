@@ -2,6 +2,10 @@
 
 # Version Update
 
+From 1.3.2 to 1.3.3 on 27th May 2026 by kierknoby
+
+Force C locale to fix awk failures on non-English systems.
+
 From 1.3.1 to 1.3.2 on 13th March 2026 by kierknoby
 
 Cosmetic changes. 
@@ -36,6 +40,7 @@ Added screen session support for interactive SSH installs, non-interactive (clou
 ## Requirements
 
 - Debian 12 (bookworm), 64-bit (x86_64)
+- 2 GB RAM Minimum
 - Root access
 - Internet connectivity
 - No existing installation of FreePBX, Asterisk, or MariaDB
@@ -314,6 +319,10 @@ Goodbye.
 ---
 
 ## Changelog
+
+### 1.3.3 (27th May 2026)
+
+- Force C locale to fix awk failures on non-English systems. Spanish (es_ES.UTF-8) and other locales using comma decimal separators caused mawk to output floats with commas (e.g. 28,2 instead of 28.2). Subsequent awk calls that interpolated these values into their program source then failed with "syntax error at or near +". Added `export LC_ALL=C` near the top of the script to force consistent dot-decimal output from all subprocesses (awk, printf, etc.) regardless of the user's locale. Reported by end user on a Spanish-locale Debian 12 VM. Same fix applied to in1.click/mirrors/cli.sh 
 
 ### 1.3.2 (13th March 2026)
 
