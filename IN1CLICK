@@ -1,5 +1,6 @@
 #!/bin/bash
-VERSION="1.3.2"
+VERSION="1.3.3"
+export LC_ALL=C
 
 #0################# IN1CLICK for FreePBX on Debian 12 ###################
 #
@@ -21,7 +22,7 @@ VERSION="1.3.2"
 # ${VERSION}
 #
 # PUBLISHED:
-# 12th March 2026 16:30 GMT
+# 27th May 2026 10:00 GMT
 #
 # LICENSE:
 # GNU General Public License v3.0
